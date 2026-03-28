@@ -1,5 +1,3 @@
-'use strict'
-
 const PURPOSE_CN = {
   romance: '恋爱与亲密关系',
   sales: '销售与沟通表达',
@@ -290,18 +288,6 @@ async function callQwenVLMax(messages, apiKey) {
   return content
 }
 
-function parseRequestBody(event) {
-  let raw = event.body || '{}'
-  if (event.isBase64Encoded && typeof raw === 'string') {
-    raw = Buffer.from(raw, 'base64').toString('utf-8')
-  }
-  try {
-    return JSON.parse(raw)
-  } catch {
-    return null
-  }
-}
-
 function validateRequest(body) {
   if (!body || typeof body !== 'object') {
     return { ok: false, error: '请求格式不正确' }
@@ -347,148 +333,155 @@ function validateRequest(body) {
   return { ok: true }
 }
 
-function errBody(message) {
-  return JSON.stringify({
-    success: false,
-    data: null,
-    error: message,
+function jsonResponse(data, status = 200) {
+  return new Response(JSON.stringify(data), {
+    status,
+    headers: {
+      'Content-Type': 'application/json; charset=utf-8',
+      'Access-Control-Allow-Origin': '*',
+    },
   })
 }
 
-exports.handler = async (event) => {
-  const headers = { 'Content-Type': 'application/json; charset=utf-8' }
-
-  if (event.httpMethod !== 'POST') {
-    return {
-      statusCode: 405,
-      headers,
-      body: errBody('不支持的请求方式'),
+export default {
+  async fetch(request, env) {
+    if (request.method === 'OPTIONS') {
+      return new Response(null, {
+        headers: {
+          'Access-Control-Allow-Origin': '*',
+          'Access-Control-Allow-Methods': 'POST, OPTIONS',
+          'Access-Control-Allow-Headers': 'Content-Type',
+          'Access-Control-Max-Age': '86400',
+        },
+      })
     }
-  }
 
-  const deepseekKey = process.env.DEEPSEEK_API_KEY
-  const qwenKey = process.env.QWEN_VL_API_KEY
-
-  const maxBytes = 4.5 * 1024 * 1024
-  const rawLen = event.body
-    ? Buffer.byteLength(
-        event.isBase64Encoded
-          ? Buffer.from(event.body, 'base64')
-          : String(event.body),
-        'utf8',
+    if (request.method !== 'POST') {
+      return jsonResponse(
+        { success: false, data: null, error: '不支持的请求方式' },
+        405,
       )
-    : 0
-  if (rawLen > maxBytes) {
-    return {
-      statusCode: 413,
-      headers,
-      body: errBody('提交内容过大，请减少图片数量或精简文字后重试'),
     }
-  }
 
-  const parsed = parseRequestBody(event)
-  if (!parsed) {
-    return {
-      statusCode: 400,
-      headers,
-      body: errBody('请求 JSON 无法解析'),
-    }
-  }
+    const maxBytes = 4.5 * 1024 * 1024
 
-  const reqCheck = validateRequest(parsed)
-  if (!reqCheck.ok) {
-    return {
-      statusCode: 400,
-      headers,
-      body: errBody(reqCheck.error),
-    }
-  }
-
-  const { name, purpose, texts, images } = parsed
-  const hasImages = images.length > 0
-
-  if (hasImages && !qwenKey?.trim()) {
-    return {
-      statusCode: 500,
-      headers,
-      body: errBody('服务配置异常，请联系管理员'),
-    }
-  }
-  if (!hasImages && !deepseekKey?.trim()) {
-    return {
-      statusCode: 500,
-      headers,
-      body: errBody('服务配置异常，请联系管理员'),
-    }
-  }
-
-  try {
-    const messages = hasImages
-      ? [
-          { role: 'system', content: SYSTEM_PROMPT },
+    try {
+      const rawTextBody = await request.text()
+      const rawLen = new TextEncoder().encode(rawTextBody).length
+      if (rawLen > maxBytes) {
+        return jsonResponse(
           {
-            role: 'user',
-            content: buildQwenMultimodalUserContent(
-              name,
-              purpose,
-              texts,
-              images,
-            ),
+            success: false,
+            data: null,
+            error: '提交内容过大，请减少图片数量或精简文字后重试',
           },
-        ]
-      : [
-          { role: 'system', content: SYSTEM_PROMPT },
-          { role: 'user', content: buildTextOnlyUserPrompt(name, purpose, texts) },
-        ]
-
-    const rawText = hasImages
-      ? await callQwenVLMax(messages, qwenKey)
-      : await callDeepSeek(messages, deepseekKey)
-
-    const parsedJson = repairAndParse(rawText)
-    if (!parsedJson) {
-      return {
-        statusCode: 200,
-        headers,
-        body: errBody('分析结果解析失败，请重新分析一次 🔄'),
+          413,
+        )
       }
-    }
 
-    const result = normalizeResult(parsedJson)
-    const validation = result
-      ? validateResult(result)
-      : { valid: false, errors: ['结构无效'] }
-
-    if (!validation.valid || !result) {
-      return {
-        statusCode: 200,
-        headers,
-        body: errBody('分析结果未通过校验，请重新分析一次 🔄'),
+      let parsed
+      try {
+        parsed = JSON.parse(rawTextBody || '{}')
+      } catch {
+        return jsonResponse(
+          { success: false, data: null, error: '请求 JSON 无法解析' },
+          400,
+        )
       }
-    }
 
-    return {
-      statusCode: 200,
-      headers,
-      body: JSON.stringify({
+      const reqCheck = validateRequest(parsed)
+      if (!reqCheck.ok) {
+        return jsonResponse(
+          { success: false, data: null, error: reqCheck.error },
+          400,
+        )
+      }
+
+      const { name, purpose, texts, images } = parsed
+      const hasImages = images.length > 0
+
+      const deepseekKey = env.DEEPSEEK_API_KEY
+      const qwenKey = env.QWEN_VL_API_KEY
+
+      if (hasImages && !qwenKey?.trim()) {
+        return jsonResponse(
+          { success: false, data: null, error: '服务配置异常，请联系管理员' },
+          500,
+        )
+      }
+      if (!hasImages && !deepseekKey?.trim()) {
+        return jsonResponse(
+          { success: false, data: null, error: '服务配置异常，请联系管理员' },
+          500,
+        )
+      }
+
+      const messages = hasImages
+        ? [
+            { role: 'system', content: SYSTEM_PROMPT },
+            {
+              role: 'user',
+              content: buildQwenMultimodalUserContent(
+                name,
+                purpose,
+                texts,
+                images,
+              ),
+            },
+          ]
+        : [
+            { role: 'system', content: SYSTEM_PROMPT },
+            {
+              role: 'user',
+              content: buildTextOnlyUserPrompt(name, purpose, texts),
+            },
+          ]
+
+      const rawAi = hasImages
+        ? await callQwenVLMax(messages, qwenKey)
+        : await callDeepSeek(messages, deepseekKey)
+
+      const parsedJson = repairAndParse(rawAi)
+      if (!parsedJson) {
+        return jsonResponse({
+          success: false,
+          data: null,
+          error: '分析结果解析失败，请重新分析一次 🔄',
+        })
+      }
+
+      const result = normalizeResult(parsedJson)
+      const validation = result
+        ? validateResult(result)
+        : { valid: false, errors: ['结构无效'] }
+
+      if (!validation.valid || !result) {
+        return jsonResponse({
+          success: false,
+          data: null,
+          error: '分析结果未通过校验，请重新分析一次 🔄',
+        })
+      }
+
+      return jsonResponse({
         success: true,
         data: result,
         error: null,
-      }),
+      })
+    } catch (err) {
+      console.error('personalens-api:', err)
+      const msg = err instanceof Error ? err.message : String(err)
+      let friendly = '分析内容较多，服务器开小差了，请稍后重试 ⏳'
+      if (/timeout|ETIMEDOUT|aborted/i.test(msg)) {
+        friendly = '分析内容较多，服务器开小差了，请稍后重试 ⏳'
+      } else if (/fetch|network|ECONNREFUSED|Failed to fetch/i.test(msg)) {
+        friendly = '网络连接出了点问题，请检查网络后重试 🌐'
+      }
+      return jsonResponse({
+        success: false,
+        data: null,
+        error: friendly,
+      })
     }
-  } catch (e) {
-    console.error('analyze error:', e)
-    const msg = e instanceof Error ? e.message : String(e)
-    let friendly = '分析内容较多，服务器开小差了，请稍后重试 ⏳'
-    if (/timeout|ETIMEDOUT|aborted/i.test(msg)) {
-      friendly = '分析内容较多，服务器开小差了，请稍后重试 ⏳'
-    } else if (/fetch|network|ECONNREFUSED|Failed to fetch/i.test(msg)) {
-      friendly = '网络连接出了点问题，请检查网络后重试 🌐'
-    }
-    return {
-      statusCode: 200,
-      headers,
-      body: errBody(friendly),
-    }
-  }
+  },
 }

@@ -32,8 +32,15 @@ function BulletList({ items }) {
 export default function ResultReport({ purpose, result }) {
   const strengths = Array.isArray(result.strengths) ? result.strengths : []
   const weaknesses = Array.isArray(result.weaknesses) ? result.weaknesses : []
+  const behaviorPatterns = Array.isArray(result.behavior_patterns)
+    ? result.behavior_patterns
+    : []
   const taboos = Array.isArray(result.taboos) ? result.taboos : []
+  const topicPreferences = Array.isArray(result.topic_preferences)
+    ? result.topic_preferences
+    : []
   const advice = Array.isArray(result.advice) ? result.advice : []
+  const warnings = Array.isArray(result.warnings) ? result.warnings : []
   const sceneTitle =
     purpose && PURPOSE_SCENE_TITLE[purpose]
       ? PURPOSE_SCENE_TITLE[purpose]
@@ -67,6 +74,8 @@ export default function ResultReport({ purpose, result }) {
         <BulletList items={strengths} />
         <p className="mt-4 font-medium text-[#FF6B6B]">你可以留意的成长点</p>
         <BulletList items={weaknesses} />
+        <p className="mt-4 font-medium text-[#4D96FF]">你的行为模式</p>
+        <BulletList items={behaviorPatterns} />
       </SectionCard>
 
       <SectionCard title="三、💼 职业背景推测">
@@ -80,19 +89,21 @@ export default function ResultReport({ purpose, result }) {
         </p>
         <p className="mt-3 font-medium">你在表达时可以避开的雷区</p>
         <BulletList items={taboos} />
+        <p className="mt-4 font-medium">你更容易聊得投入的话题方向</p>
+        <BulletList items={topicPreferences} />
       </SectionCard>
 
       <SectionCard title="五、🎯 场景成长建议">
         <p className="mb-4 text-[#6B6B6B]">
-          以下为针对你选择的「{sceneTitle}」场景的 5
+          以下为针对你选择的「{sceneTitle}」场景的 7
           条自我优化方向，全部围绕你自己的表达与行动。
         </p>
         <BulletList items={advice} />
       </SectionCard>
 
       <SectionCard title="六、⚠️ 注意事项">
-        {Array.isArray(result.warnings) && result.warnings.length > 0 ? (
-          <BulletList items={result.warnings} />
+        {warnings.length > 0 ? (
+          <BulletList items={warnings} />
         ) : (
           <p className="text-[#6B6B6B]">暂无额外提示。</p>
         )}

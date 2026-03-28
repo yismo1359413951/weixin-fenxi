@@ -133,18 +133,21 @@ export default function InputPanel({ onSubmit }) {
         <ImageUploader
           maxCount={1}
           label="🖼️ 我的微信头像"
+          hint="💡 建议上传清晰的正方形头像"
           onImagesChange={setAvatar}
         />
 
         <ImageUploader
           maxCount={1}
           label="🌄 我的背景图"
+          hint="💡 建议上传微信个人主页背景图"
           onImagesChange={setBackground}
         />
 
         <ImageUploader
           maxCount={6}
           label="📸 我的朋友圈截图"
+          hint="💡 最多上传6张，建议上传普通截图，不要长截图。每次截一屏内容效果最佳（图片越多分析越慢）"
           onImagesChange={setMoments}
         />
 

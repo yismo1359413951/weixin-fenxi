@@ -1,0 +1,6 @@
+name = "personalens-api"
+main = "index.js"
+compatibility_date = "2024-09-23"
+
+[vars]
+# 环境变量通过 wrangler secret 命令设置，不写在这里

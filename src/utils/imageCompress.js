@@ -102,6 +102,27 @@ function drawImageWithOrientation(img, orientation) {
   return canvas
 }
 
+/**
+ * 长截图：高度 > 宽度×3 时，只保留顶部，裁剪高度 = 宽度×2（再进入后续缩放）
+ */
+function cropLongScreenshotTop(oriented) {
+  const w = oriented.width
+  const h = oriented.height
+  if (w <= 0 || h <= 0) return oriented
+  if (h <= 3 * w) return oriented
+
+  const cropH = Math.min(h, Math.round(w * 2))
+  const out = document.createElement('canvas')
+  out.width = w
+  out.height = cropH
+  const ctx = out.getContext('2d')
+  if (!ctx) throw new Error('Canvas 不可用')
+  ctx.imageSmoothingEnabled = true
+  ctx.imageSmoothingQuality = 'high'
+  ctx.drawImage(oriented, 0, 0, w, cropH, 0, 0, w, cropH)
+  return out
+}
+
 function stripDataUrlPrefix(dataUrl) {
   const prefix = 'data:image/jpeg;base64,'
   if (!dataUrl.startsWith(prefix)) {
@@ -128,7 +149,8 @@ export async function compressImageToBase64(file) {
 
   const img = await loadImageFromFile(file)
   const oriented = drawImageWithOrientation(img, orientation)
-  const scaled = scaleCanvas(oriented, MAX_LONG_EDGE)
+  const afterCrop = cropLongScreenshotTop(oriented)
+  const scaled = scaleCanvas(afterCrop, MAX_LONG_EDGE)
 
   let quality = Q_PRIMARY
   let dataUrl = scaled.toDataURL('image/jpeg', quality)

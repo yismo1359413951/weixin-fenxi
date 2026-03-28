@@ -1,5 +1,5 @@
 /**
- * 与 netlify/functions/analyze.js 中 validateResult 规则保持一致（简化 JSON 结构）
+ * 与 netlify/functions/analyze.js 中 validateResult 规则保持一致
  * @param {unknown} result
  * @returns {{ valid: boolean, errors: string[] }}
  */
@@ -45,24 +45,38 @@ export function validateAnalysisResult(result) {
     errors.push('summary 不是 3 条')
   }
 
-  if (!Array.isArray(r.strengths) || r.strengths.length < 2) {
-    errors.push('strengths 少于 2 条')
+  if (!Array.isArray(r.strengths) || r.strengths.length !== 3) {
+    errors.push('strengths 须 3 条')
   }
 
-  if (!Array.isArray(r.weaknesses) || r.weaknesses.length < 2) {
-    errors.push('weaknesses 少于 2 条')
+  if (!Array.isArray(r.weaknesses) || r.weaknesses.length !== 3) {
+    errors.push('weaknesses 须 3 条')
   }
 
-  if (!Array.isArray(r.advice) || r.advice.length !== 5) {
-    errors.push('advice 须恰好 5 条')
+  if (
+    !Array.isArray(r.behavior_patterns) ||
+    r.behavior_patterns.length !== 3
+  ) {
+    errors.push('behavior_patterns 须 3 条')
   }
 
-  if (!Array.isArray(r.warnings) || r.warnings.length < 1) {
-    errors.push('warnings 为空')
+  if (!Array.isArray(r.taboos) || r.taboos.length !== 3) {
+    errors.push('taboos 须 3 条')
   }
 
-  if (!Array.isArray(r.taboos) || r.taboos.length < 2) {
-    errors.push('taboos 少于 2 条')
+  if (
+    !Array.isArray(r.topic_preferences) ||
+    r.topic_preferences.length !== 3
+  ) {
+    errors.push('topic_preferences 须 3 条')
+  }
+
+  if (!Array.isArray(r.advice) || r.advice.length !== 7) {
+    errors.push('advice 须恰好 7 条')
+  }
+
+  if (!Array.isArray(r.warnings) || r.warnings.length < 2) {
+    errors.push('warnings 至少 2 条')
   }
 
   if (!r.mbti_reason?.trim()) errors.push('mbti_reason 为空')

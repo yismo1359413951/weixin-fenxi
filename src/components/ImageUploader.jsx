@@ -6,7 +6,7 @@ function newItemId() {
   return `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 9)}`
 }
 
-export default function ImageUploader({ maxCount, label, onImagesChange }) {
+export default function ImageUploader({ maxCount, label, hint, onImagesChange }) {
   const fileInputRef = useRef(null)
   const itemsRef = useRef([])
   const [items, setItems] = useState([])
@@ -163,6 +163,10 @@ export default function ImageUploader({ maxCount, label, onImagesChange }) {
           </div>
         ) : null}
       </div>
+
+      {hint ? (
+        <p className="mt-2 text-xs leading-relaxed text-[#A0A0A0]">{hint}</p>
+      ) : null}
 
       {limitHint ? (
         <p className="mt-2 text-sm leading-relaxed text-[#FF6B6B]">

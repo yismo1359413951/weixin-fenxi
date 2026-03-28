@@ -6,7 +6,9 @@ export default function ResultCard({ name, purpose, result }) {
     purpose && PURPOSE_SCENE_TITLE[purpose]
       ? PURPOSE_SCENE_TITLE[purpose]
       : '当前侧重场景'
-  const advice = Array.isArray(result.advice) ? result.advice : []
+  const advice = Array.isArray(result.advice)
+    ? result.advice.slice(0, 5)
+    : []
   const summary = Array.isArray(result.summary) ? result.summary : []
   const conf =
     typeof result.confidence === 'number' ? result.confidence : 1

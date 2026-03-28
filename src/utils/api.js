@@ -1,11 +1,16 @@
 /**
- * 调用 Netlify Function：POST /.netlify/functions/analyze（TECH.md §四）
- * 网络/解析失败提示按 AGENTS.md 错误处理规范
+ * 分析 API：默认 Netlify Function；生产可设 VITE_API_URL 指向 Cloudflare Workers
+ */
+const API_URL =
+  import.meta.env.VITE_API_URL || '/.netlify/functions/analyze'
+
+/**
+ * 调用后端人格分析（网络/解析失败提示按 AGENTS.md 错误处理规范）
  */
 export async function analyzePersona({ name, purpose, texts, images }) {
   let response
   try {
-    response = await fetch('/.netlify/functions/analyze', {
+    response = await fetch(API_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ name, purpose, texts, images }),
