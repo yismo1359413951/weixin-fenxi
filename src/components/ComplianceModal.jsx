@@ -8,7 +8,7 @@ export default function ComplianceModal() {
   useEffect(() => {
     const agreed = localStorage.getItem('personalens_compliance_agreed');
     if (agreed !== 'true') {
-      setShow(true);
+      queueMicrotask(() => setShow(true));
     }
   }, []);
 

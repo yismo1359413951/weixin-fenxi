@@ -110,7 +110,7 @@ export default function InputPanel({ onSubmit }) {
   return (
     <form
       onSubmit={handleSubmit}
-      className="w-full rounded-2xl bg-white p-5 shadow-[0_4px_20px_rgba(255,107,107,0.12)] md:p-8"
+      className="w-full max-w-full rounded-2xl bg-white p-5 shadow-lg ring-1 ring-[#F7F3EE]/80 md:p-8"
     >
       <div className="space-y-8">
         <div>
@@ -208,7 +208,7 @@ export default function InputPanel({ onSubmit }) {
         <button
           type="submit"
           disabled={!canSubmit}
-          className="flex w-full max-w-md items-center justify-center gap-2 rounded-xl bg-[#FF6B6B] px-6 py-4 text-lg font-semibold leading-relaxed text-white shadow-[0_4px_20px_rgba(255,107,107,0.25)] transition hover:opacity-95 disabled:cursor-not-allowed disabled:bg-[#E0E0E0] disabled:text-[#9CA3AF] disabled:shadow-none md:text-xl"
+          className="flex w-full max-w-md items-center justify-center gap-2 rounded-xl bg-[#FF6B6B] px-6 py-4 text-lg font-semibold leading-relaxed text-white shadow-lg transition hover:opacity-95 disabled:cursor-not-allowed disabled:bg-[#E0E0E0] disabled:text-[#9CA3AF] disabled:shadow-none md:text-xl"
         >
           {loading ? (
             <>

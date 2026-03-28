@@ -1,7 +1,9 @@
 import { useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import InputPanel from '../components/InputPanel'
+import LoadingSteps from '../components/LoadingSteps'
 import { analyzePersona } from '../utils/api'
+import { saveResult } from '../utils/storage'
 
 function newResultId() {
   return (
@@ -12,9 +14,11 @@ function newResultId() {
 export default function Home() {
   const navigate = useNavigate()
   const [submitError, setSubmitError] = useState(null)
+  const [loading, setLoading] = useState(false)
 
   const handleAnalyze = async (payload) => {
     setSubmitError(null)
+    setLoading(true)
     try {
       const result = await analyzePersona(payload)
       const id = newResultId()
@@ -27,20 +31,19 @@ export default function Home() {
         timestamp: Date.now(),
         result,
       }
-      localStorage.setItem(
-        `personalens_result_${id}`,
-        JSON.stringify(record),
-      )
+      saveResult(id, record)
       navigate(`/result/${id}`)
     } catch (e) {
       const msg =
         e instanceof Error ? e.message : 'AI 这次发挥不太稳定，请重新分析一次 🔄'
       setSubmitError(msg)
+      setLoading(false)
     }
   }
 
   return (
     <div className="flex flex-1 flex-col px-4 py-8 md:py-12">
+      <LoadingSteps isLoading={loading} />
       <header className="mx-auto w-full max-w-2xl text-center">
         <h1 className="text-3xl font-semibold leading-relaxed text-[#2D2D2D] md:text-4xl">
           🔮 PersonaLens
@@ -53,7 +56,7 @@ export default function Home() {
       <section className="mx-auto mt-10 w-full max-w-2xl flex-1">
         {submitError ? (
           <div
-            className="mb-6 rounded-2xl border-2 border-[#FF6B6B]/50 bg-[#FF6B6B]/10 px-4 py-3 text-center text-base leading-relaxed text-[#2D2D2D]"
+            className="mb-6 rounded-2xl border-2 border-[#FF6B6B]/50 bg-[#FF6B6B]/10 px-4 py-3 text-center text-base leading-relaxed text-[#2D2D2D] shadow-lg"
             role="alert"
           >
             {submitError}
@@ -61,15 +64,6 @@ export default function Home() {
         ) : null}
         <InputPanel onSubmit={handleAnalyze} />
       </section>
-
-      <nav className="mx-auto mt-10 flex flex-wrap justify-center gap-4 text-sm md:text-base">
-        <Link
-          to="/archive"
-          className="rounded-xl bg-white px-4 py-2 font-medium text-[#4D96FF] shadow-md ring-1 ring-[#4D96FF]/20"
-        >
-          📂 档案库
-        </Link>
-      </nav>
     </div>
   )
 }

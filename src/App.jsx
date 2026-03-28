@@ -1,4 +1,5 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import AppNav from './components/AppNav'
 import ComplianceModal from './components/ComplianceModal'
 import Footer from './components/Footer'
 import Home from './pages/Home'
@@ -10,7 +11,8 @@ export default function App() {
     <BrowserRouter>
       <div className="flex min-h-dvh flex-col bg-[#FFFBF5]">
         <ComplianceModal />
-        <main className="relative z-0 flex w-full flex-1 flex-col pb-40 md:pb-36">
+        <AppNav />
+        <main className="relative z-0 flex w-full flex-1 flex-col pb-40 pt-16 md:pb-36">
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/result/:id" element={<Result />} />

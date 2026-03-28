@@ -10,7 +10,13 @@ export default function Footer() {
           本工具仅为 AI 辅助的自我人格分析学习工具，分析结果仅供个人参考，不代表客观事实，不构成任何决策建议。严禁使用本工具实施非法处理他人个人信息、侵害他人合法权益的行为。
         </p>
         <p>
-          📮 投诉举报：personalens.complaint@你的邮箱.com
+          📮 投诉举报：
+          <a
+            href="mailto:bjwnsman@163.com"
+            className="font-medium text-[#4D96FF] underline-offset-2 hover:underline"
+          >
+            bjwnsman@163.com
+          </a>
         </p>
       </div>
     </footer>

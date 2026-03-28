@@ -1,26 +1,27 @@
-import { Link } from 'react-router-dom'
+import ArchiveList from '../components/ArchiveList'
+import { formatStorageSize, getStorageUsage } from '../utils/storage'
 
 export default function Archive() {
+  const used = getStorageUsage()
+
   return (
     <div className="flex flex-1 flex-col px-4 py-8 md:py-12">
-      <div className="mx-auto w-full max-w-2xl">
-        <h1 className="text-2xl font-semibold leading-relaxed text-[#2D2D2D] md:text-3xl">
-          📂 我的分析档案
-        </h1>
-        <p className="mt-2 text-base leading-relaxed text-[#6B6B6B]">
-          这里将展示你本人的历史自我分析记录
-        </p>
-        <div className="mt-8 rounded-2xl bg-[#F7F3EE] p-8 text-center shadow-lg">
-          <p className="text-base leading-relaxed text-[#6B6B6B]">
-            档案库开发中
+      <div className="mx-auto w-full max-w-4xl">
+        <header className="text-center md:text-left">
+          <h1 className="text-2xl font-semibold leading-relaxed text-[#2D2D2D] md:text-3xl">
+            📚 我的人格档案库
+          </h1>
+          <p className="mt-2 text-sm leading-relaxed text-[#6B6B6B] md:text-base">
+            已用 {formatStorageSize(used)} / 5MB
+            <span className="hidden sm:inline">
+              （本地浏览器存储上限约 5MB，数值供参考）
+            </span>
           </p>
+        </header>
+
+        <div className="mt-8 md:mt-10">
+          <ArchiveList />
         </div>
-        <Link
-          to="/"
-          className="mt-8 inline-flex rounded-xl bg-[#FF6B6B] px-4 py-2 text-sm font-medium text-white shadow-lg"
-        >
-          🏠 返回首页
-        </Link>
       </div>
     </div>
   )
