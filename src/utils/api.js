@@ -1,8 +1,7 @@
 /**
- * 分析 API：默认 Netlify Function；生产可设 VITE_API_URL 指向 Cloudflare Workers
+ * 分析 API：生产环境由 Netlify 将 /api/analyze 代理到 Cloudflare Worker
  */
-const API_URL =
-  import.meta.env.VITE_API_URL || '/.netlify/functions/analyze'
+const API_URL = '/api/analyze'
 
 /**
  * 调用后端人格分析（网络/解析失败提示按 AGENTS.md 错误处理规范）
