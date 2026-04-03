@@ -88,15 +88,6 @@ export default function ImageUploader({ maxCount, label, hint, onImagesChange })
     notify(next)
   }
 
-  const openPicker = () => {
-    if (busy) return
-    if (items.length >= maxCount) {
-      showLimit()
-      return
-    }
-    fileInputRef.current?.click()
-  }
-
   const atLimit = items.length >= maxCount
 
   return (
@@ -130,37 +121,29 @@ export default function ImageUploader({ maxCount, label, hint, onImagesChange })
         ))}
 
         {!atLimit ? (
-          <div
-            role="button"
-            tabIndex={0}
-            onClick={openPicker}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter' || e.key === ' ') {
-                e.preventDefault()
-                openPicker()
-              }
-            }}
+          // 使用 label + 覆盖型 file input，避免 Android 微信 WebView 对 input.click() 不兼容
+          <label
             onDragOver={(e) => e.preventDefault()}
             onDrop={onDrop}
-            className={`flex h-28 min-w-[7rem] flex-1 cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed border-[#6BCB77] bg-[#FFFBF5] px-3 text-center transition hover:bg-[#6BCB77]/10 md:min-w-[10rem] ${busy ? 'pointer-events-none opacity-60' : ''}`}
+            className={`relative flex h-28 min-w-[7rem] flex-1 cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed border-[#6BCB77] bg-[#FFFBF5] px-3 text-center transition hover:bg-[#6BCB77]/10 md:min-w-[10rem] ${busy ? 'pointer-events-none opacity-60' : ''}`}
           >
             <input
               ref={fileInputRef}
               type="file"
               accept="image/*"
               multiple={maxCount > 1}
-              className="sr-only"
+              className="absolute inset-0 z-10 h-full w-full cursor-pointer opacity-0 disabled:cursor-not-allowed"
               onChange={onInputChange}
               disabled={busy}
               aria-label={label || '上传图片'}
             />
-            <span className="text-2xl" aria-hidden="true">
+            <span className="pointer-events-none text-2xl" aria-hidden="true">
               📷
             </span>
-            <span className="mt-1 text-sm font-medium leading-relaxed text-[#6B6B6B]">
+            <span className="pointer-events-none mt-1 text-sm font-medium leading-relaxed text-[#6B6B6B]">
               {busy ? '处理中…' : '点击上传'}
             </span>
-          </div>
+          </label>
         ) : null}
       </div>
 
